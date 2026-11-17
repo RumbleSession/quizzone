@@ -31,13 +31,13 @@ h2{font-size:34px;text-transform:uppercase;margin:25px 0 5px}
 .tag{background:#19171e;color:white;padding:9px 12px;font-size:9px;font-weight:bold}
 .top{display:flex;justify-content:space-between;align-items:center}
 .count{font:20px Oswald}
-.intro{text-align:center;margin:auto;max-width:650px}
+.intro{text-align:center;margin:auto;max-width:650px;width:100%}
 .intro p{color:#777;font-size:12px;line-height:1.8}
 .categories{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:25px 0}
 .categories div{background:#dedbd2;padding:13px;font-size:11px;font-weight:bold}
 .categories b{display:block;color:#8965d1;font:22px Oswald}
 .categories small{display:block;margin-top:5px;color:#777}
-.primary{background:#201c27;color:white;border:0;padding:15px 25px;font-size:11px;font-weight:bold}
+.primary{background:#201c27;color:white;border:0;padding:15px 25px;font-size:11px;font-weight:bold;margin:5px}
 .primary:hover,.next:hover{background:#49365f}
 .player-box{margin:20px 0;text-align:left}
 .player-box h2{font-size:22px}
@@ -88,6 +88,7 @@ h2{font-size:34px;text-transform:uppercase;margin:25px 0 5px}
 .creator{text-align:center;color:#aaa;font-size:9px;padding:15px 0 5px}
 .result-info{font-size:12px;color:#777}
 .save-status{font-size:11px;line-height:1.7;margin:15px 0}
+.auth-status{font-size:11px;line-height:1.6;min-height:20px;margin:12px 0}
 @media(max-width:800px){
 .layout{grid-template-columns:120px 1fr}
 .right{display:none}
@@ -142,9 +143,25 @@ h2{font-size:27px}
 </div>
 
 <div class="player-box">
-<h2>JÁTÉKOS AZONOSÍTÁSA</h2>
-<input id="playerName" type="text" maxlength="16" minlength="3" placeholder="Add meg a játékosneved..." autocomplete="nickname">
-<p>3–16 karakter. Betűk, számok, szóköz és kötőjel használható.</p>
+<h2>JÁTÉKOS FIÓK</h2>
+
+<input id="authUsername" type="text" maxlength="16"
+placeholder="Felhasználónév" autocomplete="username">
+
+<input id="authFood" type="text" maxlength="40"
+placeholder="Mi a kedvenc ételed?" style="margin-top:10px">
+
+<input id="authPassword" type="password" minlength="8"
+placeholder="Jelszó (legalább 8 karakter)"
+autocomplete="current-password" style="margin-top:10px">
+
+<p>Mindhárom mező szükséges. A név 3–16 karakter, a jelszó legalább 8 karakter legyen.</p>
+
+<button class="primary" type="button" onclick="registerAccount()">REGISZTRÁCIÓ</button>
+<button class="refresh" type="button" onclick="loginAccount()">BEJELENTKEZÉS</button>
+<button class="refresh" type="button" onclick="logoutAccount()">KIJELENTKEZÉS</button>
+
+<p id="authStatus" class="auth-status">Jelentkezz be vagy regisztrálj!</p>
 </div>
 
 <button class="primary" onclick="start()">JÁTÉK INDÍTÁSA →</button>
@@ -228,19 +245,16 @@ h2{font-size:27px}
 
 <script>
 // ========================================
-// QUIZZONE - RumbleSession
 // SUPABASE BEÁLLÍTÁS
 // ========================================
 
 const SUPABASE_URL = "https://flksohayujnkdgegngbm.supabase.co";
 
-// IDE illeszd be a saját sb_publishable_ kulcsodat:
+// IDE MÁSOLD A SAJÁT sb_publishable_ KULCSODAT:
 const SUPABASE_KEY = "sb_publishable_bU14UHvMgw8Ovm98ECV3vg_xl6rePKR";
 
 let db = null;
 
-// A /rest/v1 útvonalat eltávolítjuk, ha véletlenül bekerült.
-// A Supabase kliens automatikusan hozzáadja.
 const cleanSupabaseUrl = SUPABASE_URL
     .trim()
     .replace(/\/rest\/v1\/?$/i, "")
@@ -256,11 +270,9 @@ if (
         SUPABASE_KEY
     );
 
-    console.log("QUIZZONE Supabase API URL:", db.rest.url);
+    console.log("QUIZZONE Supabase:", db.rest.url);
 } else {
-    console.error(
-        "Supabase inicializálási hiba. Ellenőrizd az URL-t, a publishable kulcsot és a Supabase könyvtár betöltését."
-    );
+    console.error("Supabase inicializálási hiba. Ellenőrizd az URL-t, a kulcsot és a Supabase könyvtár betöltését.");
 }
 
 // ========================================
@@ -268,106 +280,29 @@ if (
 // ========================================
 
 const Q = [
-[
-"ZÁSZLÓK","Melyik ország zászlaját látod?",
-"https://flagcdn.com/w640/kg.png",
-["Kazahsztán","Kirgizisztán","Mongólia","Tádzsikisztán"],1
-],
-[
-"ZÁSZLÓK","Melyik ország zászlaját látod?",
-"https://flagcdn.com/w640/jp.png",
-["Kína","Dél-Korea","Japán","Vietnam"],2
-],
-[
-"ZÁSZLÓK","Melyik ország zászlaját látod?",
-"https://flagcdn.com/w640/ca.png",
-["USA","Kanada","Ausztrália","Anglia"],1
-],
-[
-"ZÁSZLÓK","Melyik ország zászlaját látod?",
-"https://flagcdn.com/w640/br.png",
-["Argentína","Mexikó","Brazília","Chile"],2
-],
-[
-"ZÁSZLÓK","Melyik ország zászlaját látod?",
-"https://flagcdn.com/w640/np.png",
-["Bhután","Nepál","India","Banglades"],1
-],
-[
-"CSOKIK","Melyik csokit látod?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Toblerone%20chocolate.jpg",
-["Milka","Toblerone","KitKat","Snickers"],1
-],
-[
-"CSOKIK","Melyik csoki csomagolása látható?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Milka%20chocolate%20box.jpg",
-["Milka","Kinder","Mars","Bounty"],0
-],
-[
-"CSOKIK","Melyik csoki látható?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Kit%20kat.jpg",
-["Twix","KitKat","Mars","Snickers"],1
-],
-[
-"CSOKIK","Melyik csoki látható?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Snickers%20bars.jpg",
-["Bounty","Twix","Snickers","Milky Way"],2
-],
-[
-"CSOKIK","Melyik édesség látható?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Easter%20%3D%20Kinder%20Surprise.jpg",
-["Kinder Meglepetés","Raffaello","Tic Tac","Ferrero Rocher"],0
-],
-[
-"GÉPALKATRÉSZEK","Melyik számítógép-alkatrészt látod?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Asus%20Strix%20RTX%204090%20operational.jpg",
-["Processzor","Videókártya","Memória","Tápegység"],1
-],
-[
-"GÉPALKATRÉSZEK","Melyik alkatrész látható?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Motherboard%20computer.jpg",
-["Alaplap","Videókártya","Merevlemez","Tápegység"],0
-],
-[
-"GÉPALKATRÉSZEK","Melyik alkatrész látható?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/RAM%20Module%20%28SDRAM-DDR4%29.jpg",
-["Processzor","RAM memória","SSD","Hűtőventilátor"],1
-],
-[
-"GÉPALKATRÉSZEK","Melyik alkatrész látható?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Intel%20Core%20i7%206700K.jpg",
-["Processzor","Alaplap","Videókártya","Tápegység"],0
-],
-[
-"GÉPALKATRÉSZEK","Melyik alkatrész látható?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Netzger%C3%A4t-pc%20hg.jpg",
-["RAM","SSD","Tápegység","Processzor"],2
-],
-[
-"JÁTÉKOK","Melyik játékhoz tartozik a logó?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Minecraft%20Logo-en.svg",
-["Roblox","Minecraft","Terraria","Fortnite"],1
-],
-[
-"JÁTÉKOK","Melyik játékhoz tartozik a logó?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Super%20Mario%20Bros.%20logo.png",
-["Sonic","Crash Bandicoot","Super Mario","Rayman"],2
-],
-[
-"JÁTÉKOK","Melyik játékhoz tartozik a logó?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/FortniteLogo.svg",
-["Apex Legends","Fortnite","PUBG","Valorant"],1
-],
-[
-"JÁTÉKOK","Melyik játékhoz tartozik a logó?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Among%20Us%20Logo.svg",
-["Fall Guys","Stumble Guys","Among Us","Brawl Stars"],2
-],
-[
-"JÁTÉKOK","Melyik játékhoz tartozik a logó?",
-"https://commons.wikimedia.org/wiki/Special:FilePath/Rocket%20League%20logo.svg",
-["Rocket League","FIFA","Trackmania","Forza Horizon"],0
-]
+["ZÁSZLÓK","Melyik ország zászlaját látod?","https://flagcdn.com/w640/kg.png",["Kazahsztán","Kirgizisztán","Mongólia","Tádzsikisztán"],1],
+["ZÁSZLÓK","Melyik ország zászlaját látod?","https://flagcdn.com/w640/jp.png",["Kína","Dél-Korea","Japán","Vietnam"],2],
+["ZÁSZLÓK","Melyik ország zászlaját látod?","https://flagcdn.com/w640/ca.png",["USA","Kanada","Ausztrália","Anglia"],1],
+["ZÁSZLÓK","Melyik ország zászlaját látod?","https://flagcdn.com/w640/br.png",["Argentína","Mexikó","Brazília","Chile"],2],
+["ZÁSZLÓK","Melyik ország zászlaját látod?","https://flagcdn.com/w640/np.png",["Bhután","Nepál","India","Banglades"],1],
+
+["CSOKIK","Melyik csokit látod?","https://commons.wikimedia.org/wiki/Special:FilePath/Toblerone%20chocolate.jpg",["Milka","Toblerone","KitKat","Snickers"],1],
+["CSOKIK","Melyik csoki csomagolása látható?","https://commons.wikimedia.org/wiki/Special:FilePath/Milka%20chocolate%20box.jpg",["Milka","Kinder","Mars","Bounty"],0],
+["CSOKIK","Melyik csoki látható?","https://commons.wikimedia.org/wiki/Special:FilePath/Kit%20kat.jpg",["Twix","KitKat","Mars","Snickers"],1],
+["CSOKIK","Melyik csoki látható?","https://commons.wikimedia.org/wiki/Special:FilePath/Snickers%20bars.jpg",["Bounty","Twix","Snickers","Milky Way"],2],
+["CSOKIK","Melyik édesség látható?","https://commons.wikimedia.org/wiki/Special:FilePath/Easter%20%3D%20Kinder%20Surprise.jpg",["Kinder Meglepetés","Raffaello","Tic Tac","Ferrero Rocher"],0],
+
+["GÉPALKATRÉSZEK","Melyik számítógép-alkatrészt látod?","https://commons.wikimedia.org/wiki/Special:FilePath/Asus%20Strix%20RTX%204090%20operational.jpg",["Processzor","Videókártya","Memória","Tápegység"],1],
+["GÉPALKATRÉSZEK","Melyik alkatrész látható?","https://commons.wikimedia.org/wiki/Special:FilePath/Motherboard%20computer.jpg",["Alaplap","Videókártya","Merevlemez","Tápegység"],0],
+["GÉPALKATRÉSZEK","Melyik alkatrész látható?","https://commons.wikimedia.org/wiki/Special:FilePath/RAM%20Module%20%28SDRAM-DDR4%29.jpg",["Processzor","RAM memória","SSD","Hűtőventilátor"],1],
+["GÉPALKATRÉSZEK","Melyik alkatrész látható?","https://commons.wikimedia.org/wiki/Special:FilePath/Intel%20Core%20i7%206700K.jpg",["Processzor","Alaplap","Videókártya","Tápegység"],0],
+["GÉPALKATRÉSZEK","Melyik alkatrész látható?","https://commons.wikimedia.org/wiki/Special:FilePath/Netzger%C3%A4t-pc%20hg.jpg",["RAM","SSD","Tápegység","Processzor"],2],
+
+["JÁTÉKOK","Melyik játékhoz tartozik a logó?","https://commons.wikimedia.org/wiki/Special:FilePath/Minecraft%20Logo-en.svg",["Roblox","Minecraft","Terraria","Fortnite"],1],
+["JÁTÉKOK","Melyik játékhoz tartozik a logó?","https://commons.wikimedia.org/wiki/Special:FilePath/Super%20Mario%20Bros.%20logo.png",["Sonic","Crash Bandicoot","Super Mario","Rayman"],2],
+["JÁTÉKOK","Melyik játékhoz tartozik a logó?","https://commons.wikimedia.org/wiki/Special:FilePath/FortniteLogo.svg",["Apex Legends","Fortnite","PUBG","Valorant"],1],
+["JÁTÉKOK","Melyik játékhoz tartozik a logó?","https://commons.wikimedia.org/wiki/Special:FilePath/Among%20Us%20Logo.svg",["Fall Guys","Stumble Guys","Among Us","Brawl Stars"],2],
+["JÁTÉKOK","Melyik játékhoz tartozik a logó?","https://commons.wikimedia.org/wiki/Special:FilePath/Rocket%20League%20logo.svg",["Rocket League","FIFA","Trackmania","Forza Horizon"],0]
 ];
 
 // ========================================
@@ -380,28 +315,249 @@ let hits = 0;
 let streak = 0;
 let helps = 3;
 let answered = false;
-
 let states = Array(20).fill("");
+
 let playerName = "";
 let startTime = 0;
 let elapsedTime = 0;
+let currentUser = null;
+let currentProfile = null;
 
 const $ = id => document.getElementById(id);
+
+// ========================================
+// FIÓKRENDSZER
+// ========================================
+
+// A felhasználónévből egyedi technikai e-mail készül.
+// A játékosnak nem kell valódi e-mail-címet megadnia.
+function usernameToEmail(username) {
+    const bytes = new TextEncoder().encode(
+        username.trim().toLocaleLowerCase("hu-HU")
+    );
+
+    const hex = Array.from(bytes)
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+
+    return "qz-" + hex + "@quizzone.invalid";
+}
+
+function normalizeFood(food) {
+    return food.trim()
+        .replace(/\s+/g, " ")
+        .toLocaleLowerCase("hu-HU");
+}
+
+function setAuthStatus(message) {
+    $("authStatus").textContent = message;
+}
+
+function validateAccountFields() {
+    const username = $("authUsername").value.trim();
+    const food = $("authFood").value.trim();
+    const password = $("authPassword").value;
+
+    if (!/^[\p{L}\p{N}_ -]{3,16}$/u.test(username)) {
+        setAuthStatus("A felhasználónév 3–16 karakter legyen!");
+        return null;
+    }
+
+    if (food.length < 2 || food.length > 40) {
+        setAuthStatus("A kedvenc étel 2–40 karakter legyen!");
+        return null;
+    }
+
+    if (password.length < 8 || password.length > 72) {
+        setAuthStatus("A jelszó 8–72 karakter legyen!");
+        return null;
+    }
+
+    return { username, food, password };
+}
+
+// REGISZTRÁCIÓ
+async function registerAccount() {
+    if (!db) {
+        setAuthStatus("A Supabase-kapcsolat nem működik.");
+        return;
+    }
+
+    const fields = validateAccountFields();
+    if (!fields) return;
+
+    setAuthStatus("Regisztráció folyamatban...");
+
+    try {
+        const { username, food, password } = fields;
+        const email = usernameToEmail(username);
+
+        const { data, error } = await db.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    username,
+                    favorite_food: normalizeFood(food)
+                }
+            }
+        });
+
+        if (error) throw error;
+
+        if (!data.session || !data.user) {
+            setAuthStatus(
+                "A regisztráció létrejött, de nincs aktív munkamenet. Ellenőrizd a Supabase Email beállításait és kapcsold ki a Confirm email opciót."
+            );
+            return;
+        }
+
+        // A profil automatikusan létrejön az adatbázis-triggerrel.
+        const { data: profile, error: profileError } = await db
+            .from("quiz_profiles")
+            .select("id, username, favorite_food")
+            .eq("id", data.user.id)
+            .single();
+
+        if (profileError) throw profileError;
+
+        currentUser = data.user;
+        currentProfile = profile;
+        playerName = profile.username;
+
+        setAuthStatus("✓ Sikeres regisztráció és bejelentkezés: " + playerName);
+
+    } catch (error) {
+        console.error("Regisztrációs hiba:", error);
+
+        if (
+            error.message?.toLowerCase().includes("duplicate") ||
+            error.message?.toLowerCase().includes("unique")
+        ) {
+            setAuthStatus("Ez a felhasználónév már foglalt.");
+        } else {
+            setAuthStatus(error.message || "Nem sikerült a regisztráció.");
+        }
+    }
+}
+
+// BEJELENTKEZÉS
+async function loginAccount() {
+    if (!db) {
+        setAuthStatus("A Supabase-kapcsolat nem működik.");
+        return;
+    }
+
+    const fields = validateAccountFields();
+    if (!fields) return;
+
+    setAuthStatus("Bejelentkezés folyamatban...");
+
+    try {
+        const { username, food, password } = fields;
+        const email = usernameToEmail(username);
+
+        const { data, error } = await db.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) throw error;
+
+        const { data: profile, error: profileError } = await db
+            .from("quiz_profiles")
+            .select("id, username, favorite_food")
+            .eq("id", data.user.id)
+            .single();
+
+        if (profileError) throw profileError;
+
+        if (
+            normalizeFood(profile.favorite_food) !==
+            normalizeFood(food)
+        ) {
+            await db.auth.signOut();
+            currentUser = null;
+            currentProfile = null;
+            playerName = "";
+
+            setAuthStatus("Hibás kedvenc étel!");
+            return;
+        }
+
+        currentUser = data.user;
+        currentProfile = profile;
+        playerName = profile.username;
+
+        setAuthStatus("✓ Sikeres bejelentkezés: " + playerName);
+
+    } catch (error) {
+        console.error("Bejelentkezési hiba:", error);
+        setAuthStatus("Hibás felhasználónév, kedvenc étel vagy jelszó!");
+    }
+}
+
+// KIJELENTKEZÉS
+async function logoutAccount() {
+    if (!db) return;
+
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+        setAuthStatus("Nem sikerült kijelentkezni.");
+        return;
+    }
+
+    currentUser = null;
+    currentProfile = null;
+    playerName = "";
+
+    setAuthStatus("Sikeresen kijelentkeztél.");
+}
+
+// MUNKAMENET VISSZAÁLLÍTÁSA
+async function restoreSession() {
+    if (!db) return;
+
+    try {
+        const { data, error } = await db.auth.getSession();
+
+        if (error) throw error;
+        if (!data.session) return;
+
+        const user = data.session.user;
+
+        const { data: profile, error: profileError } = await db
+            .from("quiz_profiles")
+            .select("id, username, favorite_food")
+            .eq("id", user.id)
+            .single();
+
+        if (profileError) throw profileError;
+
+        currentUser = user;
+        currentProfile = profile;
+        playerName = profile.username;
+
+        setAuthStatus("✓ Bejelentkezve: " + playerName);
+
+    } catch (error) {
+        console.error("Munkamenet-visszaállítási hiba:", error);
+        setAuthStatus("Jelentkezz be a játék folytatásához.");
+    }
+}
 
 // ========================================
 // JÁTÉK INDÍTÁSA
 // ========================================
 
 function start() {
-    const name = $("playerName").value.trim();
-
-    if (!/^[\p{L}\p{N}_ -]{3,16}$/u.test(name)) {
-        alert("Adj meg egy érvényes, 3–16 karakteres nevet!");
-        $("playerName").focus();
+    if (!currentUser || !currentProfile) {
+        alert("A játék indításához először regisztrálj vagy jelentkezz be!");
         return;
     }
 
-    playerName = name;
+    playerName = currentProfile.username;
     startTime = Date.now();
     elapsedTime = 0;
 
@@ -429,11 +585,11 @@ function render() {
     const q = Q[i];
 
     $("category").textContent =
-        String(Math.floor(i / 5) + 1).padStart(2,"0") +
+        String(Math.floor(i / 5) + 1).padStart(2, "0") +
         " / " + q[0];
 
     $("number").textContent =
-        String(i + 1).padStart(2,"0") + " / 20";
+        String(i + 1).padStart(2, "0") + " / 20";
 
     $("question").textContent = q[1];
 
@@ -464,9 +620,9 @@ function render() {
     $("helpCount").textContent = helps + "/3";
     $("helpBtn").disabled = helps === 0;
 
-    $("answers").innerHTML = "";
+    $("answers").replaceChildren();
 
-    q[3].forEach((answer,n) => {
+    q[3].forEach((answer, n) => {
         const b = document.createElement("button");
         b.className = "answer";
 
@@ -477,7 +633,7 @@ function render() {
         const text = document.createElement("span");
         text.textContent = answer;
 
-        b.append(letter,text);
+        b.append(letter, text);
         b.onclick = () => choose(n);
 
         $("answers").append(b);
@@ -496,13 +652,11 @@ function choose(n) {
     answered = true;
     const correct = Q[i][4];
 
-    [...$("answers").children].forEach((b,k) => {
+    [...$("answers").children].forEach((b, k) => {
         b.disabled = true;
 
         if (k === n) {
-            b.classList.add(
-                k === correct ? "correct" : "wrong"
-            );
+            b.classList.add(k === correct ? "correct" : "wrong");
         }
 
         if (k === correct && k !== n) {
@@ -540,11 +694,11 @@ function help() {
     if (answered || helps <= 0) return;
 
     const correct = Q[i][4];
-    let wrong = [0,1,2,3].filter(n => n !== correct);
+    let wrong = [0, 1, 2, 3].filter(n => n !== correct);
 
     wrong.sort(() => Math.random() - 0.5);
 
-    wrong.slice(0,2).forEach(n => {
+    wrong.slice(0, 2).forEach(n => {
         $("answers").children[n].style.visibility = "hidden";
         $("answers").children[n].disabled = true;
     });
@@ -579,8 +733,8 @@ function formatTime(seconds) {
     const min = Math.floor(seconds / 60);
     const sec = seconds % 60;
 
-    return String(min).padStart(2,"0") + ":" +
-           String(sec).padStart(2,"0");
+    return String(min).padStart(2, "0") + ":" +
+           String(sec).padStart(2, "0");
 }
 
 // ========================================
@@ -588,18 +742,16 @@ function formatTime(seconds) {
 // ========================================
 
 function update() {
-    $("score").textContent =
-        String(score).padStart(4,"0");
-
+    $("score").textContent = String(score).padStart(4, "0");
     $("hits").textContent = hits + " / 20";
     $("streak").textContent = streak;
 
     $("progress").textContent =
         states.filter(Boolean).length + " / 20 KÉSZ";
 
-    $("mini").innerHTML = "";
+    $("mini").replaceChildren();
 
-    states.forEach((s,n) => {
+    states.forEach((s, n) => {
         const d = document.createElement("div");
 
         if (s) d.className = s;
@@ -623,14 +775,14 @@ function update() {
 // TOPLISTA SOR
 // ========================================
 
-function createLeaderboardRow(entry,index,type) {
+function createLeaderboardRow(entry, index, type) {
     const row = document.createElement("div");
     row.className = "leader-row";
 
     const position = document.createElement("span");
     position.className = "leader-position";
     position.textContent =
-        ["🥇","🥈","🥉"][index] || (index + 1) + ".";
+        ["🥇", "🥈", "🥉"][index] || (index + 1) + ".";
 
     const name = document.createElement("span");
     name.className = "leader-name";
@@ -643,12 +795,12 @@ function createLeaderboardRow(entry,index,type) {
         ? entry.score + " P"
         : formatTime(entry.elapsed_seconds);
 
-    row.append(position,name,value);
+    row.append(position, name, value);
     return row;
 }
 
 // ========================================
-// ONLINE TOPLISTA BETÖLTÉSE
+// ONLINE TOPLISTA
 // ========================================
 
 async function loadLeaderboards() {
@@ -665,17 +817,19 @@ async function loadLeaderboards() {
     timeBox.textContent = "Betöltés...";
 
     try {
-        const [scoreResult,timeResult] = await Promise.all([
+        const [scoreResult, timeResult] = await Promise.all([
             db.from("quiz_results")
                 .select("player_name,score,elapsed_seconds,hits")
-                .order("score",{ascending:false})
-                .order("elapsed_seconds",{ascending:true})
+                .not("user_id", "is", null)
+                .order("score", { ascending: false })
+                .order("elapsed_seconds", { ascending: true })
                 .limit(10),
 
             db.from("quiz_results")
                 .select("player_name,score,elapsed_seconds,hits")
-                .order("elapsed_seconds",{ascending:true})
-                .order("score",{ascending:false})
+                .not("user_id", "is", null)
+                .order("elapsed_seconds", { ascending: true })
+                .order("score", { ascending: false })
                 .limit(10)
         ]);
 
@@ -685,28 +839,28 @@ async function loadLeaderboards() {
         scoreBox.replaceChildren();
         timeBox.replaceChildren();
 
-        if (scoreResult.data.length === 0) {
+        if (!scoreResult.data.length) {
             scoreBox.textContent = "Még nincsenek eredmények.";
         } else {
-            scoreResult.data.forEach((entry,index) => {
+            scoreResult.data.forEach((entry, index) => {
                 scoreBox.append(
-                    createLeaderboardRow(entry,index,"score")
+                    createLeaderboardRow(entry, index, "score")
                 );
             });
         }
 
-        if (timeResult.data.length === 0) {
+        if (!timeResult.data.length) {
             timeBox.textContent = "Még nincsenek eredmények.";
         } else {
-            timeResult.data.forEach((entry,index) => {
+            timeResult.data.forEach((entry, index) => {
                 timeBox.append(
-                    createLeaderboardRow(entry,index,"time")
+                    createLeaderboardRow(entry, index, "time")
                 );
             });
         }
 
-    } catch(error) {
-        console.error("Leaderboard error:",error);
+    } catch (error) {
+        console.error("Leaderboard error:", error);
         scoreBox.textContent = "Nem sikerült betölteni.";
         timeBox.textContent = "Nem sikerült betölteni.";
     }
@@ -717,23 +871,21 @@ async function loadLeaderboards() {
 // ========================================
 
 async function saveResult() {
-    if (!db) return false;
+    if (!db || !currentUser) return false;
 
     try {
-        const {error} = await db
-            .from("quiz_results")
-            .insert({
-                player_name: playerName,
-                score: score,
-                elapsed_seconds: elapsedTime,
-                hits: hits
-            });
+        const { error } = await db.rpc("save_quiz_result", {
+            p_score: score,
+            p_elapsed_seconds: elapsedTime,
+            p_hits: hits
+        });
 
         if (error) throw error;
+
         return true;
 
-    } catch(error) {
-        console.error("Save error:",error);
+    } catch (error) {
+        console.error("Save error:", error);
         return false;
     }
 }
@@ -743,6 +895,11 @@ async function saveResult() {
 // ========================================
 
 async function finish() {
+    if (!currentUser) {
+        alert("A mentéshez be kell jelentkezned.");
+        return;
+    }
+
     elapsedTime = Math.max(
         1,
         Math.floor((Date.now() - startTime) / 1000)
@@ -784,7 +941,7 @@ async function finish() {
 // BILLENTYŰZETKEZELÉS
 // ========================================
 
-document.addEventListener("keydown",e => {
+document.addEventListener("keydown", e => {
     if ($("game").classList.contains("hidden")) return;
 
     if (!answered) {
@@ -813,6 +970,7 @@ document.addEventListener("keydown",e => {
 
 update();
 loadLeaderboards();
+restoreSession();
 
 </script>
 </body>
