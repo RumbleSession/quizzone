@@ -7,7 +7,6 @@
 <title>QUIZZONE</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -15,7 +14,6 @@
 body{margin:0;background:#111015;color:white;font-family:Inter,Arial,sans-serif}
 button{cursor:pointer;font:inherit}
 .hidden{display:none!important}
-
 .layout{min-height:100vh;display:grid;grid-template-columns:180px minmax(300px,1fr) 190px;max-width:1450px;margin:auto}
 .side{background:#19171e;padding:30px 18px}
 .left{border-right:1px solid #393540}
@@ -26,7 +24,6 @@ button{cursor:pointer;font:inherit}
 .stat span{color:#aaa}
 .star{text-align:center;font-size:65px;color:#a37aff;margin-top:40px}
 .help{text-align:center;color:#aaa;font-size:10px;line-height:1.7}
-
 main{background:#eeece4;color:#19171e;margin:40px 0 10px;padding:30px;min-height:calc(100vh - 50px);border-top:5px solid #a37aff;display:flex;flex-direction:column}
 h1,h2,h3{font-family:Oswald}
 h1{font-size:52px;line-height:1.1}
@@ -40,16 +37,13 @@ h2{font-size:34px;text-transform:uppercase;margin:25px 0 5px}
 .categories div{background:#dedbd2;padding:13px;font-size:11px;font-weight:bold}
 .categories b{display:block;color:#8965d1;font:22px Oswald}
 .categories small{display:block;margin-top:5px;color:#777}
-
 .primary{background:#201c27;color:white;border:0;padding:15px 25px;font-size:11px;font-weight:bold}
 .primary:hover,.next:hover{background:#49365f}
-
 .player-box{margin:20px 0;text-align:left}
 .player-box h2{font-size:22px}
 .player-box input{width:100%;padding:14px;border:1px solid #aaa;background:#dedbd2;color:#19171e;font:inherit;font-size:13px;outline:none}
 .player-box input:focus{border-color:#8965d1}
 .player-box p{font-size:10px;color:#777}
-
 .leaderboards{margin:25px 0;text-align:left}
 .leaderboards h2{font-size:25px}
 .leaderboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -61,7 +55,6 @@ h2{font-size:34px;text-transform:uppercase;margin:25px 0 5px}
 .leader-value{font-weight:800;white-space:nowrap}
 .leader-empty{color:#777;font-size:11px;padding:15px 0}
 .refresh{margin-top:12px;background:#19171e;color:white;border:0;padding:10px;font-size:10px;font-weight:bold}
-
 .image{height:270px;background:#dedbd2;display:flex;align-items:center;justify-content:center;margin:22px 0;overflow:hidden;border:1px solid #ccc;position:relative}
 .image img{width:100%;height:100%;object-fit:contain;display:block;padding:10px}
 .image-fallback{display:none;text-align:center;color:#777;font-size:13px;padding:20px}
@@ -78,7 +71,6 @@ h2{font-size:34px;text-transform:uppercase;margin:25px 0 5px}
 .bottom{margin-top:auto;padding-top:15px;border-top:1px solid #ccc;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#777;gap:10px}
 .next{background:#27222f;color:white;border:0;padding:13px 18px;font-size:10px;font-weight:bold}
 .next:disabled{opacity:.3}
-
 .round{border-left:3px solid #514b59;padding:5px 10px 12px;margin-top:13px}
 .round.active{border-color:#c7ff3d}
 .round h3{font-size:19px;margin:4px 0}
@@ -89,7 +81,6 @@ h2{font-size:34px;text-transform:uppercase;margin:25px 0 5px}
 .mini .done{background:#c7ff3d}
 .mini .failed{background:#ec77a8}
 .mini .current{background:white}
-
 .result{text-align:center;margin:auto}
 .result strong{font:70px Oswald;color:#8561c8}
 .result-stats{display:flex;gap:10px;justify-content:center;margin:25px}
@@ -97,7 +88,6 @@ h2{font-size:34px;text-transform:uppercase;margin:25px 0 5px}
 .creator{text-align:center;color:#aaa;font-size:9px;padding:15px 0 5px}
 .result-info{font-size:12px;color:#777}
 .save-status{font-size:11px;line-height:1.7;margin:15px 0}
-
 @media(max-width:800px){
 .layout{grid-template-columns:120px 1fr}
 .right{display:none}
@@ -139,7 +129,6 @@ h2{font-size:27px}
 
 <main>
 
-<!-- FŐOLDAL -->
 <section class="intro" id="start">
 <div class="tag">QUIZZONE / ULTIMATE QUIZ</div>
 <h1>TESZTELD A<br>TUDÁSOD.</h1>
@@ -176,7 +165,6 @@ h2{font-size:27px}
 </div>
 </section>
 
-<!-- JÁTÉK -->
 <section id="game" class="hidden">
 <div class="top">
 <span class="tag" id="category">01 / ZÁSZLÓK</span>
@@ -200,7 +188,6 @@ h2{font-size:27px}
 </div>
 </section>
 
-<!-- EREDMÉNY -->
 <section class="result hidden" id="result">
 <div class="tag">QUIZZONE / EREDMÉNY</div>
 <h1>JÁTÉK VÉGE!</h1>
@@ -246,18 +233,33 @@ h2{font-size:27px}
 // ========================================
 
 const SUPABASE_URL = "https://flksohayujnkdgegngbm.supabase.co";
-const SUPABASE_KEY = "sb_publishable_bU14UHvMgw8Ovm98ECV3vg_xl6rePKR";
+
+// IDE illeszd be a saját sb_publishable_ kulcsodat:
+const SUPABASE_KEY = "IDE_MASOLD_BE_A_SAJAT_PUBLISHABLE_KEYED";
 
 let db = null;
 
+// A /rest/v1 útvonalat eltávolítjuk, ha véletlenül bekerült.
+// A Supabase kliens automatikusan hozzáadja.
+const cleanSupabaseUrl = SUPABASE_URL
+    .trim()
+    .replace(/\/rest\/v1\/?$/i, "")
+    .replace(/\/+$/, "");
+
 if (
-    SUPABASE_URL.startsWith("https://") &&
-    !SUPABASE_KEY.startsWith("IDE_") &&
+    cleanSupabaseUrl.startsWith("https://") &&
+    SUPABASE_KEY.startsWith("sb_publishable_") &&
     window.supabase
 ) {
     db = window.supabase.createClient(
-        SUPABASE_URL,
+        cleanSupabaseUrl,
         SUPABASE_KEY
+    );
+
+    console.log("QUIZZONE Supabase API URL:", db.rest.url);
+} else {
+    console.error(
+        "Supabase inicializálási hiba. Ellenőrizd az URL-t, a publishable kulcsot és a Supabase könyvtár betöltését."
     );
 }
 
@@ -291,7 +293,6 @@ const Q = [
 "https://flagcdn.com/w640/np.png",
 ["Bhután","Nepál","India","Banglades"],1
 ],
-
 [
 "CSOKIK","Melyik csokit látod?",
 "https://commons.wikimedia.org/wiki/Special:FilePath/Toblerone%20chocolate.jpg",
@@ -317,7 +318,6 @@ const Q = [
 "https://commons.wikimedia.org/wiki/Special:FilePath/Easter%20%3D%20Kinder%20Surprise.jpg",
 ["Kinder Meglepetés","Raffaello","Tic Tac","Ferrero Rocher"],0
 ],
-
 [
 "GÉPALKATRÉSZEK","Melyik számítógép-alkatrészt látod?",
 "https://commons.wikimedia.org/wiki/Special:FilePath/Asus%20Strix%20RTX%204090%20operational.jpg",
@@ -343,7 +343,6 @@ const Q = [
 "https://commons.wikimedia.org/wiki/Special:FilePath/Netzger%C3%A4t-pc%20hg.jpg",
 ["RAM","SSD","Tápegység","Processzor"],2
 ],
-
 [
 "JÁTÉKOK","Melyik játékhoz tartozik a logó?",
 "https://commons.wikimedia.org/wiki/Special:FilePath/Minecraft%20Logo-en.svg",
@@ -427,7 +426,6 @@ function start() {
 
 function render() {
     answered = false;
-
     const q = Q[i];
 
     $("category").textContent =
@@ -496,7 +494,6 @@ function choose(n) {
     if (answered) return;
 
     answered = true;
-
     const correct = Q[i][4];
 
     [...$("answers").children].forEach((b,k) => {
@@ -507,13 +504,16 @@ function choose(n) {
                 k === correct ? "correct" : "wrong"
             );
         }
+
+        if (k === correct && k !== n) {
+            b.classList.add("correct");
+        }
     });
 
     if (n === correct) {
         score += 100;
         hits++;
         streak++;
-
         states[i] = "done";
 
         $("feedback").textContent = "✓ HELYES! +100 PONT";
@@ -540,7 +540,6 @@ function help() {
     if (answered || helps <= 0) return;
 
     const correct = Q[i][4];
-
     let wrong = [0,1,2,3].filter(n => n !== correct);
 
     wrong.sort(() => Math.random() - 0.5);
@@ -630,7 +629,6 @@ function createLeaderboardRow(entry,index,type) {
 
     const position = document.createElement("span");
     position.className = "leader-position";
-
     position.textContent =
         ["🥇","🥈","🥉"][index] || (index + 1) + ".";
 
@@ -646,7 +644,6 @@ function createLeaderboardRow(entry,index,type) {
         : formatTime(entry.elapsed_seconds);
 
     row.append(position,name,value);
-
     return row;
 }
 
@@ -710,7 +707,6 @@ async function loadLeaderboards() {
 
     } catch(error) {
         console.error("Leaderboard error:",error);
-
         scoreBox.textContent = "Nem sikerült betölteni.";
         timeBox.textContent = "Nem sikerült betölteni.";
     }
@@ -734,7 +730,6 @@ async function saveResult() {
             });
 
         if (error) throw error;
-
         return true;
 
     } catch(error) {
@@ -759,7 +754,6 @@ async function finish() {
     $("finalScore").textContent = score;
     $("finalHits").textContent = hits;
     $("finalMiss").textContent = 20 - hits;
-
     $("percent").textContent = hits * 5 + "%";
     $("finalPlayer").textContent = playerName;
     $("finalTime").textContent = formatTime(elapsedTime);
