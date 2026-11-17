@@ -124,16 +124,6 @@ const questions = [
 ["Melyik játék ez?",["Rocket League","FIFA","Forza","Trackmania"],0]
 ];
 
-// ANONIM SUPABASE-MUNKAMENET
-async function ensureSession(){
-    const {data,error}=await db.auth.getSession();
-    if(error)throw error;
-    if(data.session)return;
-
-    const result=await db.auth.signInAnonymously();
-    if(result.error)throw result.error;
-}
-
 // MEZŐK ELLENŐRZÉSE
 function getFields(){
     const username=document.getElementById("username").value.trim();
@@ -160,7 +150,14 @@ async function register(){
         const {username,food}=getFields();
         setStatus("Regisztráció...");
 
-        await ensureSession();
+        // Új regisztrációhoz szükséges Supabase-munkamenet
+        const {data:sessionData,error:sessionError}=await db.auth.getSession();
+        if(sessionError)throw sessionError;
+
+        if(!sessionData.session){
+            const {error}=await db.auth.signInAnonymously();
+            if(error)throw error;
+        }
 
         const {data,error}=await db.rpc(
             "register_quiz_account",
@@ -189,7 +186,13 @@ async function login(){
         const {username,food}=getFields();
         setStatus("Bejelentkezés...");
 
-        await ensureSession();
+        const {data:sessionData,error:sessionError}=await db.auth.getSession();
+        if(sessionError)throw sessionError;
+
+        if(!sessionData.session){
+            const {error}=await db.auth.signInAnonymously();
+            if(error)throw error;
+        }
 
         const {data,error}=await db.rpc(
             "login_quiz_account",
@@ -222,8 +225,8 @@ async function logout(){
 
 // JÁTÉK INDÍTÁSA
 function startGame(){
-    if(!currentUser){
-        alert("Először jelentkezz be!");
+    if(!currentUser||!playerName){
+        alert("Először regisztrálj vagy jelentkezz be!");
         return;
     }
 
@@ -400,24 +403,16 @@ async function loadLeaderboard(){
 
 // INDULÁS
 async function initialize(){
-    try{
-        await ensureSession();
+    // Nincs automatikus anonim belépés.
+    // A játékhoz a regisztráció vagy bejelentkezés szükséges.
+    const {data,error}=await db.auth.getSession();
 
-        const {data,error}=await db.rpc("get_quiz_account");
-        if(error)throw error;
-
-        if(data){
-            const user=await db.auth.getUser();
-            currentUser=user.data.user;
-            playerName=data;
-            setStatus("Bejelentkezve: "+data);
-        }else{
-            setStatus("Regisztrálj vagy jelentkezz be!");
-        }
-
-    }catch(error){
-        console.error(error);
+    if(error){
         setStatus("Supabase kapcsolódási hiba.");
+    }else{
+        currentUser=null;
+        playerName="";
+        setStatus("Regisztrálj vagy jelentkezz be!");
     }
 
     await loadLeaderboard();
