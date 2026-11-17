@@ -1,1 +1,1020 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QUIZZONE</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ background:#111015;
+ color:white;
+ font-family:Inter,Arial,sans-serif
+}
+
+button{cursor:pointer;font:inherit}
+.hidden{display:none!important}
+
+.layout{
+ min-height:100vh;
+ display:grid;
+ grid-template-columns:180px minmax(300px,1fr) 190px;
+ max-width:1450px;
+ margin:auto
+}
+
+.side{
+ background:#19171e;
+ padding:30px 18px
+}
+
+.left{border-right:1px solid #393540}
+.right{border-left:1px solid #393540}
+
+.small{
+ font-size:9px;
+ letter-spacing:2px;
+ color:#aaa
+}
+
+.score{
+ font:55px Oswald;
+ color:#c7ff3d
+}
+
+.stat{
+ display:flex;
+ justify-content:space-between;
+ border-top:1px solid #393540;
+ padding:13px 0;
+ font-size:10px
+}
+
+.stat span{color:#aaa}
+
+.star{
+ text-align:center;
+ font-size:65px;
+ color:#a37aff;
+ margin-top:40px
+}
+
+.help{
+ text-align:center;
+ color:#aaa;
+ font-size:10px;
+ line-height:1.7
+}
+
+main{
+ background:#eeece4;
+ color:#19171e;
+ margin:40px 0 10px;
+ padding:30px;
+ min-height:calc(100vh - 50px);
+ border-top:5px solid #a37aff;
+ display:flex;
+ flex-direction:column
+}
+
+h1,h2,h3{font-family:Oswald}
+
+h1{
+ font-size:52px;
+ line-height:1.1
+}
+
+h2{
+ font-size:34px;
+ text-transform:uppercase;
+ margin:25px 0 5px
+}
+
+.tag{
+ background:#19171e;
+ color:white;
+ padding:9px 12px;
+ font-size:9px;
+ font-weight:bold
+}
+
+.top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center
+}
+
+.count{font:20px Oswald}
+
+.intro{
+ text-align:center;
+ margin:auto;
+ max-width:550px
+}
+
+.intro p{
+ color:#777;
+ font-size:12px;
+ line-height:1.8
+}
+
+.categories{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:8px;
+ margin:25px 0
+}
+
+.categories div{
+ background:#dedbd2;
+ padding:13px;
+ font-size:11px;
+ font-weight:bold
+}
+
+.categories b{
+ display:block;
+ color:#8965d1;
+ font:22px Oswald
+}
+
+.categories small{
+ display:block;
+ margin-top:5px;
+ color:#777
+}
+
+.primary{
+ background:#201c27;
+ color:white;
+ border:0;
+ padding:15px 25px;
+ font-size:11px;
+ font-weight:bold
+}
+
+.primary:hover,.next:hover{
+ background:#49365f
+}
+
+.image{
+ height:270px;
+ background:#dedbd2;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ margin:22px 0;
+ overflow:hidden;
+ border:1px solid #ccc;
+ position:relative
+}
+
+.image img{
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ display:block;
+ padding:10px
+}
+
+.image-fallback{
+ display:none;
+ text-align:center;
+ color:#777;
+ font-size:13px;
+ padding:20px
+}
+
+.answers{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px
+}
+
+.answer{
+ background:transparent;
+ border:1px solid #c8c3ba;
+ padding:14px;
+ text-align:left;
+ font-size:12px;
+ font-weight:bold;
+ display:flex;
+ align-items:center;
+ gap:12px;
+ min-height:55px
+}
+
+.answer:hover:not(:disabled){
+ background:#ded5f2;
+ border-color:#9672d4
+}
+
+.letter{
+ border:1px solid #aaa;
+ width:25px;
+ height:25px;
+ display:grid;
+ place-items:center;
+ flex-shrink:0
+}
+
+.answer.correct{
+ background:#d6edb5;
+ border-color:#76a53b
+}
+
+.answer.wrong{
+ background:#f0c2c7;
+ border-color:#d75a67
+}
+
+.answer:disabled{cursor:default}
+
+.lifeline{
+ margin:15px 0;
+ background:#19171e;
+ color:white;
+ border:0;
+ padding:10px;
+ font-size:10px;
+ font-weight:bold
+}
+
+.lifeline:disabled{opacity:.4}
+
+.feedback{
+ padding:12px;
+ background:#dedbd2;
+ font-size:11px;
+ margin-top:12px
+}
+
+.bottom{
+ margin-top:auto;
+ padding-top:15px;
+ border-top:1px solid #ccc;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ font-size:9px;
+ color:#777;
+ gap:10px
+}
+
+.next{
+ background:#27222f;
+ color:white;
+ border:0;
+ padding:13px 18px;
+ font-size:10px;
+ font-weight:bold
+}
+
+.next:disabled{opacity:.3}
+
+.round{
+ border-left:3px solid #514b59;
+ padding:5px 10px 12px;
+ margin-top:13px
+}
+
+.round.active{border-color:#c7ff3d}
+
+.round h3{
+ font-size:19px;
+ margin:4px 0
+}
+
+.round.active h3{color:#c7ff3d}
+
+.round p,.round span{
+ font-size:9px;
+ color:#aaa
+}
+
+.mini{
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ gap:4px;
+ margin-top:10px
+}
+
+.mini div{
+ height:8px;
+ background:#45414c
+}
+
+.mini .done{background:#c7ff3d}
+.mini .failed{background:#ec77a8}
+.mini .current{background:white}
+
+.result{
+ text-align:center;
+ margin:auto
+}
+
+.result strong{
+ font:70px Oswald;
+ color:#8561c8
+}
+
+.result-stats{
+ display:flex;
+ gap:10px;
+ justify-content:center;
+ margin:25px
+}
+
+.result-stats div{
+ background:#dedbd2;
+ padding:15px;
+ font-size:10px
+}
+
+.creator{
+ text-align:center;
+ color:#aaa;
+ font-size:9px;
+ padding:15px 0 5px
+}
+
+@media(max-width:800px){
+ .layout{grid-template-columns:120px 1fr}
+ .right{display:none}
+ main{padding:20px}
+ .side{padding:20px 10px}
+}
+
+@media(max-width:550px){
+ .layout{
+  display:flex;
+  flex-direction:column
+ }
+
+ .left{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border:0;
+  border-bottom:1px solid #393540;
+  padding:10px
+ }
+
+ .left .star,.left .help,.small{display:none}
+
+ .score{font-size:30px}
+
+ .stat{
+  border:0;
+  padding:4px;
+  display:block
+ }
+
+ main{
+  margin:0;
+  min-height:90vh
+ }
+
+ .answers{grid-template-columns:1fr}
+ h2{font-size:27px}
+
+ .categories{grid-template-columns:1fr 1fr}
+
+ .image{height:230px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+<aside class="side left">
+ <div>
+  <div class="small">A TE KÖRÖD</div>
+  <div class="score" id="score">0000</div>
+  <div class="small">PONT / 2000</div>
+
+  <div class="stat">
+   <span>TALÁLAT</span>
+   <b id="hits">0 / 20</b>
+  </div>
+
+  <div class="stat">
+   <span>SZÉRIA</span>
+   <b id="streak">0</b>
+  </div>
+ </div>
+
+ <div>
+  <div class="star">✳</div>
+  <div class="help">
+   Nem kell sietni.<br>
+   Csak jól válaszolj!
+  </div>
+ </div>
+</aside>
+
+<main>
+
+<section class="intro" id="start">
+ <div class="tag">QUIZZONE / ULTIMATE QUIZ</div>
+
+ <h1>TESZTELD A<br>TUDÁSOD.</h1>
+
+ <p>4 kategória. 20 kérdés. 2000 pont.</p>
+
+ <div class="categories">
+  <div><b>01</b>ZÁSZLÓK<small>5 kérdés</small></div>
+  <div><b>02</b>CSOKIK<small>5 kérdés</small></div>
+  <div><b>03</b>GÉPALKATRÉSZEK<small>5 kérdés</small></div>
+  <div><b>04</b>JÁTÉKOK<small>5 kérdés</small></div>
+ </div>
+
+ <button class="primary" onclick="start()">
+  JÁTÉK INDÍTÁSA →
+ </button>
+</section>
+
+<section id="game" class="hidden">
+
+ <div class="top">
+  <span class="tag" id="category">01 / ZÁSZLÓK</span>
+  <span class="count" id="number">01 / 20</span>
+ </div>
+
+ <h2 id="question"></h2>
+
+ <div class="image">
+  <img id="picture" alt="Kérdés képe">
+
+  <div class="image-fallback" id="imageFallback">
+   A kép nem tölthető be.
+  </div>
+ </div>
+
+ <button class="lifeline" id="helpBtn" onclick="help()">
+  ½ FELEZŐ <span id="helpCount">3/3</span>
+ </button>
+
+ <div class="answers" id="answers"></div>
+
+ <div class="feedback hidden" id="feedback"></div>
+
+ <div class="bottom">
+  <span>VÁLASZ: A–D / 1–4</span>
+
+  <button class="next" id="next" disabled onclick="next()">
+   KÖVETKEZŐ →
+  </button>
+ </div>
+
+</section>
+
+<section class="result hidden" id="result">
+
+ <div class="tag">QUIZZONE / EREDMÉNY</div>
+
+ <h1>JÁTÉK VÉGE!</h1>
+
+ <strong id="finalScore">0000</strong>
+
+ <p>PONT A 2000-BŐL</p>
+
+ <div class="result-stats">
+  <div>HELYES<br><b id="finalHits">0</b></div>
+  <div>HIBÁS<br><b id="finalMiss">0</b></div>
+  <div>PONTOSSÁG<br><b id="percent">0%</b></div>
+ </div>
+
+ <p id="message"></p>
+
+ <button class="primary" onclick="location.reload()">
+  ÚJ JÁTÉK ↻
+ </button>
+
+</section>
+
+<div class="creator">Készítette: RumbleSession</div>
+
+</main>
+
+<aside class="side right">
+
+ <div class="small">A MENETREND</div>
+
+ <div class="round active" id="r0">
+  <span>KÖR 01</span>
+  <h3>ZÁSZLÓK</h3>
+  <p>5 országismereti kérdés</p>
+ </div>
+
+ <div class="round" id="r1">
+  <span>KÖR 02</span>
+  <h3>CSOKIK</h3>
+  <p>5 csoki felismerés</p>
+ </div>
+
+ <div class="round" id="r2">
+  <span>KÖR 03</span>
+  <h3>GÉPALKATRÉSZEK</h3>
+  <p>5 alkatrész felismerés</p>
+ </div>
+
+ <div class="round" id="r3">
+  <span>KÖR 04</span>
+  <h3>JÁTÉKOK</h3>
+  <p>5 játék felismerés</p>
+ </div>
+
+ <div class="small" style="margin-top:25px" id="progress">
+  0 / 20 KÉSZ
+ </div>
+
+ <div class="mini" id="mini"></div>
+
+</aside>
+
+</div>
+
+<script>
+
+/*
+  QUIZZONE
+  Készítette: RumbleSession
+*/
+
+const Q = [
+
+/* ZÁSZLÓK */
+
+[
+ "ZÁSZLÓK",
+ "Melyik ország zászlaját látod?",
+ "https://flagcdn.com/w640/kg.png",
+ ["Kazahsztán","Kirgizisztán","Mongólia","Tádzsikisztán"],
+ 1
+],
+
+[
+ "ZÁSZLÓK",
+ "Melyik ország zászlaját látod?",
+ "https://flagcdn.com/w640/jp.png",
+ ["Kína","Dél-Korea","Japán","Vietnam"],
+ 2
+],
+
+[
+ "ZÁSZLÓK",
+ "Melyik ország zászlaját látod?",
+ "https://flagcdn.com/w640/ca.png",
+ ["USA","Kanada","Ausztrália","Anglia"],
+ 1
+],
+
+[
+ "ZÁSZLÓK",
+ "Melyik ország zászlaját látod?",
+ "https://flagcdn.com/w640/br.png",
+ ["Argentína","Mexikó","Brazília","Chile"],
+ 2
+],
+
+[
+ "ZÁSZLÓK",
+ "Melyik ország zászlaját látod?",
+ "https://flagcdn.com/w640/np.png",
+ ["Bhután","Nepál","India","Banglades"],
+ 1
+],
+
+
+/* CSOKIK */
+
+[
+ "CSOKIK",
+ "Melyik csokit látod?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Toblerone%20chocolate.jpg",
+ ["Milka","Toblerone","KitKat","Snickers"],
+ 1
+],
+
+[
+ "CSOKIK",
+ "Melyik csoki csomagolása látható?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Milka%20chocolate%20box.jpg",
+ ["Milka","Kinder","Mars","Bounty"],
+ 0
+],
+
+[
+ "CSOKIK",
+ "Melyik csoki látható?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Kit%20kat.jpg",
+ ["Twix","KitKat","Mars","Snickers"],
+ 1
+],
+
+[
+ "CSOKIK",
+ "Melyik csoki látható?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Snickers%20bars.jpg",
+ ["Bounty","Twix","Snickers","Milky Way"],
+ 2
+],
+
+[
+ "CSOKIK",
+ "Melyik édesség látható?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Easter%20%3D%20Kinder%20Surprise.jpg",
+ ["Kinder Meglepetés","Raffaello","Tic Tac","Ferrero Rocher"],
+ 0
+],
+
+
+/* GÉPALKATRÉSZEK */
+
+[
+ "GÉPALKATRÉSZEK",
+ "Melyik számítógép-alkatrészt látod?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Asus%20Strix%20RTX%204090%20operational.jpg",
+ ["Processzor","Videókártya","Memória","Tápegység"],
+ 1
+],
+
+[
+ "GÉPALKATRÉSZEK",
+ "Melyik alkatrész látható?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Motherboard%20computer.jpg",
+ ["Alaplap","Videókártya","Merevlemez","Tápegység"],
+ 0
+],
+
+[
+ "GÉPALKATRÉSZEK",
+ "Melyik alkatrész látható?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/RAM%20Module%20%28SDRAM-DDR4%29.jpg",
+ ["Processzor","RAM memória","SSD","Hűtőventilátor"],
+ 1
+],
+
+[
+ "GÉPALKATRÉSZEK",
+ "Melyik alkatrész látható?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Intel%20Core%20i7%206700K.jpg",
+ ["Processzor","Alaplap","Videókártya","Tápegység"],
+ 0
+],
+
+[
+ "GÉPALKATRÉSZEK",
+ "Melyik alkatrész látható?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Netzger%C3%A4t-pc%20hg.jpg",
+ ["RAM","SSD","Tápegység","Processzor"],
+ 2
+],
+
+
+/* JÁTÉKOK */
+
+[
+ "JÁTÉKOK",
+ "Melyik játékhoz tartozik a logó?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Minecraft%20Logo-en.svg",
+ ["Roblox","Minecraft","Terraria","Fortnite"],
+ 1
+],
+
+[
+ "JÁTÉKOK",
+ "Melyik játékhoz tartozik a logó?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Super%20Mario%20Bros.%20logo.png",
+ ["Sonic","Crash Bandicoot","Super Mario","Rayman"],
+ 2
+],
+
+[
+ "JÁTÉKOK",
+ "Melyik játékhoz tartozik a logó?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/FortniteLogo.svg",
+ ["Apex Legends","Fortnite","PUBG","Valorant"],
+ 1
+],
+
+[
+ "JÁTÉKOK",
+ "Melyik játékhoz tartozik a logó?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Among%20Us%20Logo.svg",
+ ["Fall Guys","Stumble Guys","Among Us","Brawl Stars"],
+ 2
+],
+
+[
+ "JÁTÉKOK",
+ "Melyik játékhoz tartozik a logó?",
+ "https://commons.wikimedia.org/wiki/Special:FilePath/Rocket%20League%20logo.svg",
+ ["Rocket League","FIFA","Trackmania","Forza Horizon"],
+ 0
+]
+
+];
+
+
+let i=0;
+let score=0;
+let hits=0;
+let streak=0;
+let helps=3;
+let answered=false;
+
+let states=Array(20).fill("");
+
+const $=id=>document.getElementById(id);
+
+
+function start(){
+
+ $("start").classList.add("hidden");
+ $("result").classList.add("hidden");
+ $("game").classList.remove("hidden");
+
+ render();
+}
+
+
+function render(){
+
+ answered=false;
+
+ const q=Q[i];
+
+ $("category").textContent=
+  String(Math.floor(i/5)+1).padStart(2,"0")+" / "+q[0];
+
+ $("number").textContent=
+  String(i+1).padStart(2,"0")+" / 20";
+
+ $("question").textContent=q[1];
+
+ const picture=$("picture");
+
+ picture.style.display="block";
+ $("imageFallback").style.display="none";
+
+ picture.onload=()=>{
+  picture.style.display="block";
+  $("imageFallback").style.display="none";
+ };
+
+ picture.onerror=()=>{
+  picture.style.display="none";
+  $("imageFallback").style.display="block";
+ };
+
+ picture.src=q[2];
+ picture.alt=q[0]+" kérdés képe";
+
+ $("feedback").classList.add("hidden");
+
+ $("next").disabled=true;
+
+ $("next").textContent=
+  i===19?"EREDMÉNY →":"KÖVETKEZŐ →";
+
+ $("helpCount").textContent=helps+"/3";
+ $("helpBtn").disabled=helps===0;
+
+ $("answers").innerHTML="";
+
+ q[3].forEach((answer,n)=>{
+
+  const b=document.createElement("button");
+  b.className="answer";
+
+  const letter=document.createElement("span");
+  letter.className="letter";
+  letter.textContent="ABCD"[n];
+
+  const text=document.createElement("span");
+  text.textContent=answer;
+
+  b.append(letter,text);
+
+  b.onclick=()=>choose(n);
+
+  $("answers").append(b);
+
+ });
+
+ update();
+}
+
+
+function choose(n){
+
+ if(answered)return;
+
+ answered=true;
+
+ const correct=Q[i][4];
+
+ [...$("answers").children].forEach((b,k)=>{
+
+  b.disabled=true;
+
+  // Csak a játékos választása kap színt.
+  // Hibás válasznál nem mutatjuk meg a helyeset.
+
+  if(k===n){
+   b.classList.add(
+    k===correct?"correct":"wrong"
+   );
+  }
+
+ });
+
+ if(n===correct){
+
+  score+=100;
+  hits++;
+  streak++;
+
+  states[i]="done";
+
+  $("feedback").textContent=
+   "✓ HELYES! +100 PONT";
+
+  $("feedback").style.color="green";
+
+ }else{
+
+  streak=0;
+
+  states[i]="failed";
+
+  $("feedback").textContent=
+   "✕ HIBÁS VÁLASZ!";
+
+  $("feedback").style.color="#b33";
+
+ }
+
+ $("feedback").classList.remove("hidden");
+
+ $("next").disabled=false;
+
+ update();
+}
+
+
+function help(){
+
+ if(answered||helps<=0)return;
+
+ const correct=Q[i][4];
+
+ let wrong=[0,1,2,3].filter(n=>n!==correct);
+
+ wrong.sort(()=>Math.random()-.5);
+
+ wrong.slice(0,2).forEach(n=>{
+
+  $("answers").children[n].style.visibility="hidden";
+  $("answers").children[n].disabled=true;
+
+ });
+
+ helps--;
+
+ $("helpCount").textContent=helps+"/3";
+
+ $("helpBtn").disabled=helps===0;
+}
+
+
+function next(){
+
+ if(!answered)return;
+
+ if(i===19){
+  finish();
+  return;
+ }
+
+ i++;
+
+ render();
+}
+
+
+function update(){
+
+ $("score").textContent=
+  String(score).padStart(4,"0");
+
+ $("hits").textContent=
+  hits+" / 20";
+
+ $("streak").textContent=streak;
+
+ $("progress").textContent=
+  states.filter(Boolean).length+" / 20 KÉSZ";
+
+ $("mini").innerHTML="";
+
+ states.forEach((s,n)=>{
+
+  const d=document.createElement("div");
+
+  if(s)d.className=s;
+
+  if(n===i&&!answered){
+   d.classList.add("current");
+  }
+
+  $("mini").append(d);
+
+ });
+
+ for(let n=0;n<4;n++){
+
+  $("r"+n).classList.toggle(
+   "active",
+   Math.floor(i/5)===n
+  );
+
+ }
+
+}
+
+
+function finish(){
+
+ $("game").classList.add("hidden");
+
+ $("result").classList.remove("hidden");
+
+ $("finalScore").textContent=score;
+ $("finalHits").textContent=hits;
+ $("finalMiss").textContent=20-hits;
+
+ $("percent").textContent=hits*5+"%";
+
+ $("message").textContent=
+
+  hits>=18
+   ?"Kvízmester vagy! Fantasztikus eredmény!"
+
+  :hits>=14
+   ?"Nagyon szép teljesítmény!"
+
+  :hits>=10
+   ?"Jó munka! Próbáld újra!"
+
+  :"Gyakorolj és próbáld újra!";
+
+}
+
+
+document.addEventListener("keydown",e=>{
+
+ if($("game").classList.contains("hidden"))return;
+
+ if(!answered){
+
+  let n="abcd".indexOf(e.key.toLowerCase());
+
+  if(n<0&&"1234".includes(e.key)){
+   n=Number(e.key)-1;
+  }
+
+  if(
+   n>=0&&
+   $("answers").children[n]&&
+   !$("answers").children[n].disabled
+  ){
+
+   $("answers").children[n].click();
+
+  }
+
+ }else if(e.key==="Enter"){
+
+  next();
+
+ }
+
+});
+
+
+update();
+
+</script>
+
+</body>
+</html>
