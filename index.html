@@ -148,10 +148,8 @@ h2{font-size:27px}
 
 <div class="player-box">
 <h2>JÁTÉKOS AZONOSÍTÁSA</h2>
-
 <input id="playerName" type="text" maxlength="16" minlength="3" placeholder="Felhasználónév..." autocomplete="username">
 <input id="food" type="text" maxlength="40" placeholder="Kedvenc étel..." autocomplete="off">
-
 <p>Felhasználónév: 3–16 karakter. Kedvenc étel: 2–40 karakter.</p>
 
 <div class="auth-buttons">
@@ -253,8 +251,7 @@ const SUPABASE_KEY = "sb_publishable_bU14UHvMgw8Ovm98ECV3vg_xl6rePKR";
 
 let db = null;
 
-const cleanSupabaseUrl = SUPABASE_URL
-    .trim()
+const cleanSupabaseUrl = SUPABASE_URL.trim()
     .replace(/\/rest\/v1\/?$/i, "")
     .replace(/\/+$/, "");
 
@@ -267,10 +264,8 @@ if (
         cleanSupabaseUrl,
         SUPABASE_KEY
     );
-
-    console.log("QUIZZONE Supabase API URL:", db.rest.url);
 } else {
-    console.error("Supabase inicializálási hiba. Ellenőrizd az URL-t és a publishable kulcsot.");
+    console.error("Supabase inicializálási hiba.");
 }
 
 // ========================================
@@ -435,11 +430,9 @@ async function ensureSession() {
     const { data, error } = await db.auth.getSession();
 
     if (error) throw error;
-
     if (data.session) return;
 
     const result = await db.auth.signInAnonymously();
-
     if (result.error) throw result.error;
 }
 
@@ -448,17 +441,17 @@ async function register() {
         const { username, food } = getFields();
 
         setStatus("Regisztráció folyamatban...", true);
-
         await ensureSession();
 
-        const { data, error } = await db.rpc("register_quiz_account", {
+        const { error } = await db.rpc("register_quiz_account", {
             p_username: username,
             p_food: food
         });
 
         if (error) throw error;
 
-        const { data: userData, error: userError } = await db.auth.getUser();
+        const { data: userData, error: userError } =
+            await db.auth.getUser();
 
         if (userError) throw userError;
 
@@ -478,17 +471,17 @@ async function login() {
         const { username, food } = getFields();
 
         setStatus("Bejelentkezés folyamatban...", true);
-
         await ensureSession();
 
-        const { data, error } = await db.rpc("login_quiz_account", {
+        const { error } = await db.rpc("login_quiz_account", {
             p_username: username,
             p_food: food
         });
 
         if (error) throw error;
 
-        const { data: userData, error: userError } = await db.auth.getUser();
+        const { data: userData, error: userError } =
+            await db.auth.getUser();
 
         if (userError) throw userError;
 
@@ -508,7 +501,6 @@ async function logout() {
         if (!db) throw new Error("A Supabase nincs beállítva!");
 
         const { error } = await db.auth.signOut();
-
         if (error) throw error;
 
         currentUser = null;
@@ -781,7 +773,8 @@ function createLeaderboardRow(entry,index,type) {
 }
 
 // ========================================
-// JAVÍTOTT ONLINE TOPLISTA BETÖLTÉSE
+// TOPLISTA BETÖLTÉSE
+// JÁTÉKOSONKÉNT EGY REKORD
 // ========================================
 
 async function loadLeaderboards() {
@@ -798,25 +791,23 @@ async function loadLeaderboards() {
     timeBox.textContent = "Betöltés...";
 
     try {
-        const [scoreResult, timeResult] = await Promise.all([
-            db.from("quiz_results")
-                .select("player_name,score,elapsed_seconds,hits")
-                .order("score", { ascending: false })
-                .order("elapsed_seconds", { ascending: true })
-                .limit(10),
+        const { data, error } = await db
+            .from("quiz_results")
+            .select("player_name,score,elapsed_seconds,hits");
 
-            db.from("quiz_results")
-                .select("player_name,score,elapsed_seconds,hits")
-                .order("elapsed_seconds", { ascending: true })
-                .order("score", { ascending: false })
-                .limit(10)
-        ]);
+        if (error) throw error;
 
-        if (scoreResult.error) throw scoreResult.error;
-        if (timeResult.error) throw timeResult.error;
+        const results = data || [];
 
-        const scores = scoreResult.data || [];
-        const times = timeResult.data || [];
+        const scores = [...results].sort((a, b) =>
+            b.score - a.score ||
+            a.elapsed_seconds - b.elapsed_seconds
+        );
+
+        const times = [...results].sort((a, b) =>
+            a.elapsed_seconds - b.elapsed_seconds ||
+            b.score - a.score
+        );
 
         scoreBox.replaceChildren();
         timeBox.replaceChildren();
@@ -824,7 +815,7 @@ async function loadLeaderboards() {
         if (scores.length === 0) {
             scoreBox.textContent = "Még nincsenek eredmények.";
         } else {
-            scores.forEach((entry, index) => {
+            scores.slice(0, 10).forEach((entry, index) => {
                 scoreBox.append(
                     createLeaderboardRow(entry, index, "score")
                 );
@@ -834,21 +825,17 @@ async function loadLeaderboards() {
         if (times.length === 0) {
             timeBox.textContent = "Még nincsenek eredmények.";
         } else {
-            times.forEach((entry, index) => {
+            times.slice(0, 10).forEach((entry, index) => {
                 timeBox.append(
                     createLeaderboardRow(entry, index, "time")
                 );
             });
         }
 
-        console.log("Toplista sikeresen frissítve:", {
-            pontok: scores.length,
-            idők: times.length
-        });
+        console.log("Toplista sikeresen frissítve.");
 
     } catch (error) {
         console.error("Leaderboard error:", error);
-
         scoreBox.textContent = "Hiba: " + error.message;
         timeBox.textContent = "Hiba: " + error.message;
     }
@@ -856,26 +843,57 @@ async function loadLeaderboards() {
 
 // ========================================
 // EREDMÉNY MENTÉSE
+// FELHASZNÁLÓNÉVENKÉNT EGY REKORD
 // ========================================
 
 async function saveResult() {
-    if (!db) return false;
+    if (!db || !playerName) return false;
 
     try {
+        const { data: existing, error: selectError } = await db
+            .from("quiz_results")
+            .select("player_name,score,elapsed_seconds,hits")
+            .eq("player_name", playerName)
+            .maybeSingle();
+
+        if (selectError) throw selectError;
+
+        // Legjobb pontszám megőrzése
+        const bestScore = existing
+            ? Math.max(existing.score, score)
+            : score;
+
+        // Legjobb idő megőrzése
+        const bestTime = existing
+            ? Math.min(existing.elapsed_seconds, elapsedTime)
+            : elapsedTime;
+
+        // A legjobb pontszámhoz tartozó találatszám
+        const bestHits = existing
+            ? (score > existing.score ? hits : existing.hits)
+            : hits;
+
         const { error } = await db
             .from("quiz_results")
-            .insert({
+            .upsert({
                 player_name: playerName,
-                score: score,
-                elapsed_seconds: elapsedTime,
-                hits: hits
+                score: bestScore,
+                elapsed_seconds: bestTime,
+                hits: bestHits
+            }, {
+                onConflict: "player_name"
             });
 
         if (error) throw error;
+
         return true;
 
-    } catch(error) {
+    } catch (error) {
         console.error("Save error:", error);
+
+        $("saveStatus").textContent =
+            "⚠ Mentési hiba: " + error.message;
+
         return false;
     }
 }
