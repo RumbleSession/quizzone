@@ -781,7 +781,7 @@ function createLeaderboardRow(entry,index,type) {
 }
 
 // ========================================
-// ONLINE TOPLISTA BETÖLTÉSE
+// JAVÍTOTT ONLINE TOPLISTA BETÖLTÉSE
 // ========================================
 
 async function loadLeaderboards() {
@@ -798,50 +798,59 @@ async function loadLeaderboards() {
     timeBox.textContent = "Betöltés...";
 
     try {
-        const [scoreResult,timeResult] = await Promise.all([
+        const [scoreResult, timeResult] = await Promise.all([
             db.from("quiz_results")
                 .select("player_name,score,elapsed_seconds,hits")
-                .order("score",{ascending:false})
-                .order("elapsed_seconds",{ascending:true})
+                .order("score", { ascending: false })
+                .order("elapsed_seconds", { ascending: true })
                 .limit(10),
 
             db.from("quiz_results")
                 .select("player_name,score,elapsed_seconds,hits")
-                .order("elapsed_seconds",{ascending:true})
-                .order("score",{ascending:false})
+                .order("elapsed_seconds", { ascending: true })
+                .order("score", { ascending: false })
                 .limit(10)
         ]);
 
         if (scoreResult.error) throw scoreResult.error;
         if (timeResult.error) throw timeResult.error;
 
+        const scores = scoreResult.data || [];
+        const times = timeResult.data || [];
+
         scoreBox.replaceChildren();
         timeBox.replaceChildren();
 
-        if (scoreResult.data.length === 0) {
+        if (scores.length === 0) {
             scoreBox.textContent = "Még nincsenek eredmények.";
         } else {
-            scoreResult.data.forEach((entry,index) => {
+            scores.forEach((entry, index) => {
                 scoreBox.append(
-                    createLeaderboardRow(entry,index,"score")
+                    createLeaderboardRow(entry, index, "score")
                 );
             });
         }
 
-        if (timeResult.data.length === 0) {
+        if (times.length === 0) {
             timeBox.textContent = "Még nincsenek eredmények.";
         } else {
-            timeResult.data.forEach((entry,index) => {
+            times.forEach((entry, index) => {
                 timeBox.append(
-                    createLeaderboardRow(entry,index,"time")
+                    createLeaderboardRow(entry, index, "time")
                 );
             });
         }
 
-    } catch(error) {
-        console.error("Leaderboard error:",error);
-        scoreBox.textContent = "Nem sikerült betölteni.";
-        timeBox.textContent = "Nem sikerült betölteni.";
+        console.log("Toplista sikeresen frissítve:", {
+            pontok: scores.length,
+            idők: times.length
+        });
+
+    } catch (error) {
+        console.error("Leaderboard error:", error);
+
+        scoreBox.textContent = "Hiba: " + error.message;
+        timeBox.textContent = "Hiba: " + error.message;
     }
 }
 
@@ -853,7 +862,7 @@ async function saveResult() {
     if (!db) return false;
 
     try {
-        const {error} = await db
+        const { error } = await db
             .from("quiz_results")
             .insert({
                 player_name: playerName,
@@ -866,7 +875,7 @@ async function saveResult() {
         return true;
 
     } catch(error) {
-        console.error("Save error:",error);
+        console.error("Save error:", error);
         return false;
     }
 }
